@@ -1,0 +1,44 @@
+require('dotenv').config();
+const express = require('express');
+const { createClient } = require('@supabase/supabase-js');
+const app = express();
+const port = process.env.PORT || 3000;
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+app.use(express.json());
+
+app.get('/api/messages', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('messages')
+            .select('username, text')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load messages' });
+    }
+});
+
+app.post('/api/send-message', async (req, res) => {
+    const { username, text } = req.body;
+
+    try {
+        const { data, error } = await supabase
+            .from('messages')
+            .insert([{ username, text }]);
+
+        if (error) throw error;
+        res.status(201).json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`API server running on port ${port}`);
+});
