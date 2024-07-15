@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
+const session = require('express-session');
+const PGStore = require('connect-pg-simple')(session);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,6 +15,7 @@ const supabaseKey = process.env.SUPABASE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Setup CORS
 app.use(cors({
     origin: 'https://jagamalam.vercel.app', // Ganti dengan URL frontend Anda
     credentials: true
