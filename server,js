@@ -1,44 +1,50 @@
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
 const { createClient } = require('@supabase/supabase-js');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/api/messages', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('messages')
-            .select('username, text')
-            .order('id', { ascending: true });
-
-        if (error) throw error;
-        res.status(200).json(data);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to load messages' });
-    }
-});
-
-app.post('/api/send-message', async (req, res) => {
-    const { username, text } = req.body;
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
 
     try {
-        const { data, error } = await supabase
-            .from('messages')
-            .insert([{ username, text }]);
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .single();
 
-        if (error) throw error;
-        res.status(201).json(data);
+        if (error || !user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        req.session.userId = user.id;
+        req.session.username = user.username;
+
+        res.status(200).json({ message: 'Login successful' });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to send message' });
+        console.error('Error during login:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
 app.listen(port, () => {
-    console.log(`API server running on port ${port}`);
+    console.log(`Server is running on port ${port}`);
 });
