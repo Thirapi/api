@@ -18,14 +18,14 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Setup CORS
 app.use(cors({
   origin: 'https://jagamalam.vercel.app', // Ganti dengan domain frontend Anda
-  methods: 'GET,POST',
+  methods: 'GET,POST,OPTIONS',
   credentials: true,
+  allowedHeaders: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
 }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Session setup
 app.use(session({
   store: new PGStore({
     conString: process.env.DATABASE_URL
