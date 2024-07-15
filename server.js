@@ -23,6 +23,9 @@ app.use(cors({
   credentials: true
 }));
 
+// Menangani preflight requests untuk semua route
+app.options('*', cors());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
