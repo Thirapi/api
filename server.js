@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -6,6 +5,8 @@ const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const session = require('express-session');
 const PGStore = require('connect-pg-simple')(session);
+
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,26 +19,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Setup CORS
 app.use(cors({
   origin: 'https://jagamalam.vercel.app', // Ganti dengan domain frontend Anda
-  methods: 'GET,POST,OPTIONS',
-  allowedHeaders: 'Content-Type,Authorization',
-  credentials: true
+  methods: 'GET,POST',
+  credentials: true,
 }));
-
-// Menangani preflight requests untuk semua route
-app.options('*', cors());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(session({
-  store: new PGStore({
-    conString: process.env.DATABASE_URL
-  }),
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false } // Untuk production, pastikan cookie: { secure: true }
-}));
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
