@@ -17,21 +17,22 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Setup CORS
 app.use(cors({
-  origin: 'https://jagamalam.vercel.app',
+  origin: 'https://jagamalam.vercel.app', // Ganti dengan domain frontend Anda
   methods: 'GET,POST,OPTIONS',
+  allowedHeaders: 'Content-Type, Authorization',
   credentials: true,
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Handle preflight requests
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'https://jagamalam.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
+// Middleware untuk logging
+app.use((req, res, next) => {
+  console.log(`${req.method} request for '${req.url}' - ${JSON.stringify(req.body)}`);
+  next();
 });
 
 app.post('/api/login', async (req, res) => {
@@ -45,12 +46,14 @@ app.post('/api/login', async (req, res) => {
             .single();
 
         if (error || !user) {
+            console.error('User not found or error:', error);
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
+            console.error('Password does not match');
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
