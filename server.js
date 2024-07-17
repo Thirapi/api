@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -5,8 +6,6 @@ const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const session = require('express-session');
 const PGStore = require('connect-pg-simple')(session);
-
-require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,7 +26,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Handle preflight requests
-app.options('*', cors());
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'https://jagamalam.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
