@@ -19,21 +19,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 app.use(cors({
   origin: 'https://jagamalam.vercel.app', // Ganti dengan domain frontend Anda
   methods: 'GET,POST,OPTIONS',
-  allowedHeaders: 'Content-Type, Authorization',
   credentials: true,
 }));
 
-// Handle preflight requests
-app.options('*', cors());
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Middleware untuk logging
-app.use((req, res, next) => {
-  console.log(`${req.method} request for '${req.url}' - ${JSON.stringify(req.body)}`);
-  next();
-});
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
@@ -46,14 +36,12 @@ app.post('/api/login', async (req, res) => {
             .single();
 
         if (error || !user) {
-            console.error('User not found or error:', error);
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
-            console.error('Password does not match');
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
@@ -66,6 +54,9 @@ app.post('/api/login', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+// Handle preflight requests
+app.options('/api/login', cors());
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
