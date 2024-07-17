@@ -18,13 +18,16 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Setup CORS
 app.use(cors({
-  origin: 'https://jagamalam.vercel.app', // Ganti dengan domain frontend Anda
-  methods: 'GET,POST',
+  origin: 'https://jagamalam.vercel.app',
+  methods: 'GET,POST,OPTIONS',
   credentials: true,
 }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
